@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rasika — Senior Product Designer & Creative Technologist</title>
+  
+  <!-- Modern Typography Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@1,400;1,600&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Minimalist Luxury Preloader -->
+  <div id="loader" class="loader-overlay" aria-live="polite">
+    <div class="loader-content">
+      <div class="loader-ring-wrapper">
+        <svg class="loader-svg" viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="42" />
+          <circle id="progress-ring" class="ring-fill" cx="50" cy="50" r="42" />
+        </svg>
+        <span id="progress-text" class="progress-number">0%</span>
+      </div>
+      <p class="loader-caption">Rasika Portfolio</p>
+    </div>
+  </div>
+
+  <!-- Minimal Top Scroll Progress Line -->
+  <div id="scroll-bar" class="scroll-progress-bar"></div>
+
+  <!-- Persistent Background Canvas Stage for 180-Frame Scroll Animation -->
+  <div class="animation-stage" id="stage">
+    <canvas id="animation-canvas"></canvas>
+    <div class="stage-overlay-glow"></div>
+  </div>
+
+  <!-- =========================================================================
+       PORTFOLIO CONTENT (Layered seamlessly over the scroll animation)
+       ========================================================================= -->
+  <div class="page-container">
+
+    <!-- Floating Glassmorphic Header / Navbar -->
+    <header class="navbar">
+      <div class="nav-inner">
+        <!-- Brand Logo -->
+        <a href="#" class="brand-logo" aria-label="Rasika Portfolio Home">
+          <div class="logo-icon">
+            <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2L2 8.5L14 15L26 8.5L14 2Z" fill="url(#logo-grad-1)" />
+              <path d="M2 19.5L14 26L26 19.5" stroke="url(#logo-grad-2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M2 14L14 20.5L26 14" stroke="url(#logo-grad-1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+              <defs>
+                <linearGradient id="logo-grad-1" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#FF5E3A" />
+                  <stop offset="1" stop-color="#FF2A54" />
+                </linearGradient>
+                <linearGradient id="logo-grad-2" x1="2" y1="14" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#FFA834" />
+                  <stop offset="1" stop-color="#FF5E3A" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="logo-text">Rasika<span class="logo-dot">.</span></span>
+        </a>
+
+        <!-- Centered Floating Pill Navigation -->
+        <nav class="nav-pill" aria-label="Main Navigation">
+          <a href="#work" class="nav-link">Selected Work</a>
+          <a href="#about" class="nav-link">About Me</a>
+          <a href="#skills" class="nav-link">Expertise</a>
+          <a href="#contact" class="nav-link">Contact</a>
+        </nav>
+
+        <!-- CTA Button -->
+        <div class="nav-action">
+          <a href="#contact" class="btn-pill-light">Let's Talk</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION 1: HERO SECTION -->
+    <section class="section section-hero" id="hero">
+      <div class="section-inner hero-grid">
+        
+        <!-- Left Hero Content -->
+        <div class="hero-content">
+          <!-- Availability Badge -->
+          <div class="perspective-badge">
+            <span class="badge-status-dot"></span>
+            <span class="badge-text">Available for Select Projects & Leadership Roles Worldwide</span>
+          </div>
+
+          <!-- Giant Main Headline -->
+          <h1 class="hero-title">
+            Creative Direction<br />
+            Crafted for All<br />
+            Not <span class="highlight-machines">Machines</span>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="hero-subtitle">
+            Hi, I'm <strong>Rasika</strong> — a Senior Product Designer & Creative Technologist crafting intuitive digital experiences, design systems, and high-impact web products.
+          </p>
+
+          <!-- CTA & Social Proof Stack -->
+          <div class="hero-cta-row">
+            <a href="#work" class="btn-hero-primary">
+              <span>Explore Work</span>
+              <div class="btn-arrow-circle">
+                <svg viewBox="0 0 16 16" fill="none" class="arrow-svg">
+                  <path d="M3.333 8h9.334M8.667 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </a>
+
+            <!-- Client Avatars & Review -->
+            <div class="social-proof-group">
+              <div class="avatar-stack">
+                <img src="assets/avatar-karan.jpg" alt="Client Testimonial" class="avatar-img" />
+                <img src="assets/avatar-riya.jpg" alt="Client Testimonial" class="avatar-img" />
+                <div class="avatar-img avatar-more">+40</div>
+              </div>
+              <div class="proof-text-block">
+                <span class="proof-headline">40+ Happy Clients</span>
+                <span class="proof-sub">★ 5.0 Star Feedback</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Stat Glass Cards -->
+          <div class="hero-stat-cards">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-number">8+</span>
+                <span class="stat-star">✦</span>
+              </div>
+              <span class="stat-label">Years of Experience</span>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-number">60+</span>
+                <span class="stat-star">✦</span>
+              </div>
+              <span class="stat-label">Projects Delivered</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Micro Metrics & Ambience -->
+        <div class="hero-sidebar-widget">
+          <div class="metric-glass-box">
+            <div class="metric-header">
+              <div class="metric-chart-bars">
+                <div class="bar bar-1"></div>
+                <div class="bar bar-2"></div>
+                <div class="bar bar-3"></div>
+                <div class="bar bar-4"></div>
+              </div>
+              <div class="metric-value-wrap">
+                <span class="metric-value">100%</span>
+                <span class="metric-tag">Design & Code Quality</span>
+              </div>
+            </div>
+            <div class="metric-body">
+              <h4 class="metric-title">Built For Real Impact</h4>
+              <p class="metric-desc">Bridging aesthetic elegance with engineering precision to ship high-converting products.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partner / Client Logos Strip -->
+      <div class="hero-partners-strip">
+        <div class="partners-label">Trusted By & Collaborated With</div>
+        <div class="partners-list">
+          <div class="partner-item"><span class="partner-icon">✦</span> Linear</div>
+          <div class="partner-item"><span class="partner-icon">●</span> Spotify</div>
+          <div class="partner-item"><span class="partner-icon">◈</span> Vercel</div>
+          <div class="partner-item"><span class="partner-icon">❖</span> Stripe</div>
+          <div class="partner-item"><span class="partner-icon">▲</span> Figma</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: MEET THE MIND BEHIND THE WORK -->
+    <section class="section section-minds" id="about">
+      <div class="section-inner">
+        <!-- Section Header -->
+        <div class="section-top-header">
+          <div class="header-left">
+            <div class="section-tag">• About Me & Philosophy</div>
+            <h2 class="section-title">
+              Meet The Mind<br />
+              Behind The Work
+            </h2>
+          </div>
+          
+          <div class="social-pills-row">
+            <a href="https://twitter.com" target="_blank" rel="noreferrer" class="social-pill" aria-label="X Twitter">𝕏</a>
+            <a href="https://github.com" target="_blank" rel="noreferrer" class="social-pill" aria-label="GitHub">🌐</a>
+            <a href="https://linkedin.com" target="_blank" rel="noreferrer" class="social-pill" aria-label="LinkedIn">in</a>
+          </div>
+        </div>
+
+        <!-- 2-Column Grid -->
+        <div class="minds-grid">
+          <!-- Left Visual Card -->
+          <div class="minds-visual-card">
+            <div class="minds-image-container">
+              <img src="assets/project-cafe.jpg" alt="Rasika Design Studio" class="minds-featured-img" />
+              <div class="image-gradient-overlay"></div>
+              <div class="visual-badge-overlay">
+                <span class="visual-badge-tag">Design Leader</span>
+                <span class="visual-badge-name">Rasika</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Content & Cards -->
+          <div class="minds-info-col">
+            <p class="minds-statement">
+              I bring together <strong>product strategy</strong>, <strong>interface design</strong>, and modern frontend architecture to build thoughtful, award-winning experiences made with purpose and craftsmanship.
+            </p>
+
+            <!-- Metadata Row -->
+            <div class="minds-meta-row">
+              <div class="meta-field">
+                <span class="meta-icon">🌍</span>
+                <div class="meta-text">
+                  <span class="meta-primary">Global Client Base</span>
+                  <span class="meta-secondary">USA, UK, Europe & Asia</span>
+                </div>
+              </div>
+
+              <div class="team-avatars">
+                <img src="assets/avatar-riya.jpg" alt="Collaborator" class="team-avatar-img" />
+                <img src="assets/avatar-karan.jpg" alt="Collaborator" class="team-avatar-img" />
+                <div class="team-avatar-count">+12</div>
+              </div>
+            </div>
+
+            <!-- Double Glass Cards Row -->
+            <div class="minds-cards-row" id="skills">
+              <!-- Card 1: Core Tech Stack & Skills -->
+              <div class="glass-feature-card partner-card">
+                <div class="card-stat-header">
+                  <span class="big-stat">60+</span>
+                  <span class="stat-sublabel">Shipped Products</span>
+                </div>
+                
+                <div class="partner-logos-mini-grid">
+                  <span class="mini-logo">Figma</span>
+                  <span class="mini-logo">React</span>
+                  <span class="mini-logo">Next.js</span>
+                  <span class="mini-logo">TypeScript</span>
+                  <span class="mini-logo">Three.js</span>
+                  <span class="mini-logo">UI/UX</span>
+                </div>
+
+                <a href="#contact" class="btn-orange-full">Get In Touch</a>
+              </div>
+
+              <!-- Card 2: Personal Fact & Milestones -->
+              <div class="glass-feature-card fact-card">
+                <div class="fact-card-top">
+                  <span class="fact-label">Key Milestone</span>
+                  <span class="fact-index">01/04</span>
+                </div>
+
+                <div class="fact-img-wrap">
+                  <img src="assets/project-gym.jpg" alt="Project milestone" class="fact-thumb" />
+                  <div class="fact-img-glow"></div>
+                </div>
+
+                <div class="fact-stat-bottom">
+                  <span class="big-stat">98%</span>
+                  <span class="fact-caption">Client retention & repeat collaborations</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: DESIGN WITH PURPOSE. BUILD WITH IMPACT. (FEATURED WORK) -->
+    <section class="section section-impact" id="work">
+      <div class="section-inner">
+        
+        <!-- Centered Header -->
+        <div class="impact-header-center">
+          <h2 class="impact-main-title">
+            Design With Purpose.<br />
+            Build With Impact.
+          </h2>
+          <p class="impact-subtext">
+            A curated showcase of recent digital products, brand design systems, and interactive experiences crafted with precision.
+          </p>
+        </div>
+
+        <!-- 3 Feature Cards Grid -->
+        <div class="impact-cards-grid">
+          
+          <!-- Card 1: Architectural / Spatial Design App -->
+          <div class="impact-card visual-impact-card">
+            <div class="impact-img-wrap">
+              <img src="assets/project-interior.jpg" alt="Spatial Design Platform" class="impact-bg-img" />
+              <div class="impact-img-vignette"></div>
+            </div>
+            <div class="impact-card-content">
+              <span class="card-pill-tag">Spatial UI / WebGL</span>
+              <h3 class="card-heading">Aura Spaces — 3D Architecture Platform</h3>
+            </div>
+          </div>
+
+          <!-- Card 2: High-Scale Product Highlight -->
+          <div class="impact-card stat-impact-card">
+            <div class="impact-icon-badge">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="impact-metric-wrap">
+              <span class="impact-big-number">150k+</span>
+              <h3 class="impact-title-small">Active Users Impacted</h3>
+              <p class="impact-desc">Designed scalable design systems and intuitive interfaces for consumer fintech & healthtech apps.</p>
+            </div>
+          </div>
+
+          <!-- Card 3: Interactive Tech Graph / Nodes -->
+          <div class="impact-card tech-node-card">
+            <div class="node-graphic-container">
+              <div class="central-node-glow">
+                <div class="node-pulse"></div>
+                <div class="central-glyph">
+                  <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
+                    <path d="M14 2L2 8.5L14 15L26 8.5L14 2Z" fill="url(#node-g1)" />
+                    <path d="M2 19.5L14 26L26 19.5" stroke="url(#node-g2)" stroke-width="2.5" />
+                    <path d="M2 14L14 20.5L26 14" stroke="url(#node-g1)" stroke-width="2.5" />
+                    <defs>
+                      <linearGradient id="node-g1" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FF5E3A" />
+                        <stop offset="1" stop-color="#FF2A54" />
+                      </linearGradient>
+                      <linearGradient id="node-g2" x1="2" y1="14" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FFA834" />
+                        <stop offset="1" stop-color="#FF5E3A" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+              
+              <!-- Orbital Connected Nodes -->
+              <div class="orbit-node node-top-right">
+                <span class="node-icon">⚡</span>
+              </div>
+              <div class="orbit-node node-bottom-left">
+                <span class="node-icon">✦</span>
+              </div>
+              <div class="orbit-node node-bottom-right">
+                <span class="node-icon">◈</span>
+              </div>
+            </div>
+
+            <div class="impact-card-content">
+              <span class="card-pill-tag">Design Engineering</span>
+              <h3 class="card-heading">Nexus — Real-Time Interactive Systems</h3>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION 4: CALL TO ACTION / CONTACT -->
+    <section class="section section-contact" id="contact">
+      <div class="section-inner contact-box">
+        <div class="contact-header">
+          <span class="section-tag">• Let's Connect</span>
+          <h2 class="contact-title">Have an Ambitious Project in Mind?</h2>
+          <p class="contact-subtitle">
+            Whether you need a complete product redesign, design system architecture, or creative frontend development, let's create something memorable.
+          </p>
+        </div>
+
+        <div class="contact-actions">
+          <a href="mailto:hello@rasika.design" class="btn-hero-primary contact-cta-btn">
+            <span>hello@rasika.design</span>
+            <div class="btn-arrow-circle">
+              <svg viewBox="0 0 16 16" fill="none" class="arrow-svg">
+                <path d="M3.333 8h9.334M8.667 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </a>
+          <a href="https://calendly.com" target="_blank" rel="noreferrer" class="btn-pill-glass">Book a 15-Min Intro Call</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sleek Minimal Footer -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-left">
+          <span class="footer-copy">© 2026 Rasika. Designed & Engineered with passion.</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://twitter.com" target="_blank" rel="noreferrer" class="footer-link">Twitter</a>
+          <a href="https://linkedin.com" target="_blank" rel="noreferrer" class="footer-link">LinkedIn</a>
+          <a href="https://github.com" target="_blank" rel="noreferrer" class="footer-link">GitHub</a>
+          <a href="https://dribbble.com" target="_blank" rel="noreferrer" class="footer-link">Dribbble</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
