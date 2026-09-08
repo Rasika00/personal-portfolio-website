@@ -19,6 +19,7 @@
   const progressRing = document.getElementById('progress-ring');
   const progressText = document.getElementById('progress-text');
   const progressBar = document.getElementById('scroll-bar');
+  const navbar = document.querySelector('.navbar');
 
   // Image Cache
   const images = new Array(TOTAL_FRAMES);
@@ -180,6 +181,10 @@
       targetProgress = Math.max(0, Math.min(1, scrollTop / maxScroll));
     } else {
       targetProgress = 0;
+    }
+
+    if (navbar) {
+      navbar.classList.toggle('scrolled', scrollTop > 20);
     }
 
     startAnimationLoop();
