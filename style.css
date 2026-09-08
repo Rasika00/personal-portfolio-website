@@ -998,7 +998,7 @@ body {
 .minds-statement {
   font-size: clamp(1.15rem, 1.8vw, 1.45rem);
   line-height: 1.55;
-  color: var(--text-muted);
+  color: #ffffff;
   margin-bottom: 2rem;
   font-weight: 400;
 }
