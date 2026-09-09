@@ -250,11 +250,50 @@
     }
   });
 
+  // Interactive Tech Stack Accordion (Topic Selector)
+  function initTechAccordion() {
+    const accordion = document.getElementById('techAccordion');
+    if (!accordion) return;
+
+    const items = accordion.querySelectorAll('.accordion-item');
+
+    items.forEach((item) => {
+      const trigger = item.querySelector('.accordion-trigger');
+      if (!trigger) return;
+
+      trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isOpen = item.classList.contains('active');
+
+        // Close all other items to keep view clean and balanced
+        items.forEach((other) => {
+          if (other !== item) {
+            other.classList.remove('active');
+            const otherTrigger = other.querySelector('.accordion-trigger');
+            if (otherTrigger) {
+              otherTrigger.setAttribute('aria-expanded', 'false');
+            }
+          }
+        });
+
+        // Toggle the clicked topic
+        if (isOpen) {
+          item.classList.remove('active');
+          trigger.setAttribute('aria-expanded', 'false');
+        } else {
+          item.classList.add('active');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  }
+
   // Initialize
   function init() {
     resizeCanvas();
     preloadImages();
     updateScrollProgress();
+    initTechAccordion();
   }
 
   if (document.readyState === 'loading') {
