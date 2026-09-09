@@ -1458,6 +1458,427 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* Interactive Fact Card */
+.interactive-fact-card {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.interactive-fact-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 168, 52, 0.45);
+  box-shadow: 0 12px 32px rgba(255, 168, 52, 0.2);
+}
+
+.fact-label-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fact-click-hint {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--accent-amber);
+  background: rgba(255, 168, 52, 0.12);
+  border: 1px solid rgba(255, 168, 52, 0.25);
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--radius-pill);
+  transition: all 0.2s ease;
+}
+
+.interactive-fact-card:hover .fact-click-hint {
+  background: rgba(255, 168, 52, 0.28);
+  color: #ffffff;
+}
+
+.btn-sports-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.48rem;
+  background: rgba(255, 168, 52, 0.08);
+  border: 1px solid rgba(255, 168, 52, 0.25);
+  color: var(--accent-amber);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.btn-sports-view:hover {
+  background: linear-gradient(135deg, #ffa834, #ff5e3a);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(255, 168, 52, 0.35);
+}
+
+/* =========================================================================
+   HONORS & SPORTS MODAL POPUP
+   ========================================================================= */
+dialog.sports-modal-backdrop {
+  border: none;
+  background: transparent;
+  padding: 0;
+  max-width: 100vw;
+  max-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+dialog.sports-modal-backdrop[open] {
+  display: flex;
+}
+
+dialog.sports-modal-backdrop::backdrop {
+  background: rgba(4, 1, 3, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPopUp {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.sports-modal-container {
+  width: min(760px, 92vw);
+  max-height: 86vh;
+  background: linear-gradient(145deg, rgba(22, 10, 16, 0.96), rgba(12, 5, 9, 0.98));
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 45px rgba(255, 168, 52, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalPopUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sports-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 1.4rem 1.6rem 1rem 1.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sports-modal-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.modal-badge-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-amber);
+}
+
+.sports-modal-title {
+  font-family: var(--font-heading);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.sports-modal-subtext {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.sports-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sports-modal-close:hover {
+  background: rgba(255, 42, 84, 0.2);
+  color: #ffffff;
+  border-color: rgba(255, 42, 84, 0.4);
+  transform: rotate(90deg);
+}
+
+.sports-modal-body {
+  padding: 1.4rem 1.6rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 168, 52, 0.4) transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* Hero Card inside modal */
+.sports-hero-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 168, 52, 0.08), rgba(255, 94, 58, 0.04));
+  border: 1px solid rgba(255, 168, 52, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  overflow: hidden;
+}
+
+.sports-hero-glow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(255, 168, 52, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.sports-trophy-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #ffd166;
+  background: rgba(255, 209, 102, 0.12);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: 0.5rem;
+}
+
+.sports-hero-headline {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.45rem;
+}
+
+.sports-hero-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 0.85rem;
+}
+
+.sports-meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sports-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.pill-dot.gold { background: #ffd166; box-shadow: 0 0 6px #ffd166; }
+.pill-dot.amber { background: #ffa834; box-shadow: 0 0 6px #ffa834; }
+.pill-dot.cyan { background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
+.pill-dot.green { background: #10b981; box-shadow: 0 0 6px #10b981; }
+
+/* Event Grid */
+.sports-events-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .sports-events-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sports-event-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  gap: 0.8rem;
+  transition: all 0.22s ease;
+}
+
+.sports-event-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
+}
+
+.event-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.event-icon-circle.gold-glow {
+  background: rgba(255, 209, 102, 0.12);
+  border-color: rgba(255, 209, 102, 0.3);
+}
+.event-icon-circle.amber-glow {
+  background: rgba(255, 168, 52, 0.12);
+  border-color: rgba(255, 168, 52, 0.3);
+}
+.event-icon-circle.blue-glow {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+.event-icon-circle.purple-glow {
+  background: rgba(192, 132, 252, 0.12);
+  border-color: rgba(192, 132, 252, 0.3);
+}
+
+.event-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.event-meta-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.event-category {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.event-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-pill);
+}
+.event-badge.gold-tag {
+  color: #ffd166;
+  background: rgba(255, 209, 102, 0.15);
+}
+.event-badge.amber-tag {
+  color: #ffa834;
+  background: rgba(255, 168, 52, 0.15);
+}
+.event-badge.blue-tag {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+}
+.event-badge.purple-tag {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.15);
+}
+
+.event-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.35rem;
+  line-height: 1.3;
+}
+
+.event-desc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-bottom: 0.65rem;
+}
+
+.event-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.event-tag {
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.12rem 0.42rem;
+  border-radius: 4px;
+}
+
+/* Modal Footer */
+.sports-modal-footer {
+  padding: 0.9rem 1.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.modal-footer-stats {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.close-modal-action-btn {
+  padding: 0.45rem 1.2rem;
+  font-size: 0.78rem;
+}
+
 /* =========================================================================
    SECTION 3: DESIGN WITH PURPOSE. BUILD WITH IMPACT.
    ========================================================================= */

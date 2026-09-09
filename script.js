@@ -288,12 +288,71 @@
     });
   }
 
+  // Honors & Sports Modal Popup
+  function initSportsModal() {
+    const modal = document.getElementById('sportsModal');
+    const openCard = document.getElementById('openSportsModalBtn');
+    const closeBtn = document.getElementById('closeSportsModalBtn');
+    const closeFooterBtn = document.getElementById('closeSportsModalFooterBtn');
+
+    if (!modal) return;
+
+    function openModal(e) {
+      if (e) e.preventDefault();
+      if (typeof modal.showModal === 'function') {
+        modal.showModal();
+      } else {
+        modal.setAttribute('open', '');
+      }
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(e) {
+      if (e) e.preventDefault();
+      if (typeof modal.close === 'function') {
+        modal.close();
+      } else {
+        modal.removeAttribute('open');
+      }
+      document.body.style.overflow = '';
+    }
+
+    if (openCard) {
+      openCard.addEventListener('click', openModal);
+      openCard.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          openModal(e);
+        }
+      });
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (closeFooterBtn) closeFooterBtn.addEventListener('click', closeModal);
+
+    // Close when clicking backdrop
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal(e);
+      }
+    });
+
+    // Restore scroll on native close / cancel
+    modal.addEventListener('close', () => {
+      document.body.style.overflow = '';
+    });
+
+    modal.addEventListener('cancel', () => {
+      document.body.style.overflow = '';
+    });
+  }
+
   // Initialize
   function init() {
     resizeCanvas();
     preloadImages();
     updateScrollProgress();
     initTechAccordion();
+    initSportsModal();
   }
 
   if (document.readyState === 'loading') {
