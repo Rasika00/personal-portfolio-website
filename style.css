@@ -1664,46 +1664,81 @@ dialog.sports-modal-backdrop::backdrop {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: 0.85rem;
   display: flex;
-  gap: 0.8rem;
-  transition: all 0.22s ease;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.25s ease;
+  overflow: hidden;
 }
 
 .sports-event-card:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.16);
-  transform: translateY(-2px);
+  border-color: rgba(255, 168, 52, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.event-icon-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+.event-card-media {
+  position: relative;
+  width: 100%;
+  height: 105px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: rgba(20, 10, 15, 0.6);
+}
+
+.event-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sports-event-card:hover .event-thumb-img {
+  transform: scale(1.06);
+}
+
+.event-media-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(12, 5, 9, 0.65) 100%);
+  pointer-events: none;
+}
+
+.event-icon-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.9rem;
+  background: rgba(12, 5, 9, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 2;
 }
 
-.event-icon-circle.gold-glow {
-  background: rgba(255, 209, 102, 0.12);
-  border-color: rgba(255, 209, 102, 0.3);
+.event-icon-badge.gold-glow {
+  border-color: rgba(255, 209, 102, 0.5);
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.3);
 }
-.event-icon-circle.amber-glow {
-  background: rgba(255, 168, 52, 0.12);
-  border-color: rgba(255, 168, 52, 0.3);
+.event-icon-badge.amber-glow {
+  border-color: rgba(255, 168, 52, 0.5);
+  box-shadow: 0 0 10px rgba(255, 168, 52, 0.3);
 }
-.event-icon-circle.blue-glow {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.3);
+.event-icon-badge.blue-glow {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
-.event-icon-circle.purple-glow {
-  background: rgba(192, 132, 252, 0.12);
-  border-color: rgba(192, 132, 252, 0.3);
+.event-icon-badge.purple-glow {
+  border-color: rgba(192, 132, 252, 0.5);
+  box-shadow: 0 0 10px rgba(192, 132, 252, 0.3);
 }
 
 .event-card-content {
