@@ -1557,8 +1557,13 @@ dialog.sports-modal-backdrop::backdrop {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modalPopUp {
@@ -1566,6 +1571,7 @@ dialog.sports-modal-backdrop::backdrop {
     opacity: 0;
     transform: scale(0.92) translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -1735,14 +1741,17 @@ dialog.sports-modal-backdrop::backdrop {
   border-color: rgba(255, 209, 102, 0.5);
   box-shadow: 0 0 10px rgba(255, 209, 102, 0.3);
 }
+
 .event-icon-badge.amber-glow {
   border-color: rgba(255, 168, 52, 0.5);
   box-shadow: 0 0 10px rgba(255, 168, 52, 0.3);
 }
+
 .event-icon-badge.blue-glow {
   border-color: rgba(56, 189, 248, 0.5);
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
+
 .event-icon-badge.purple-glow {
   border-color: rgba(192, 132, 252, 0.5);
   box-shadow: 0 0 10px rgba(192, 132, 252, 0.3);
@@ -1775,18 +1784,22 @@ dialog.sports-modal-backdrop::backdrop {
   padding: 0.1rem 0.4rem;
   border-radius: var(--radius-pill);
 }
+
 .event-badge.gold-tag {
   color: #ffd166;
   background: rgba(255, 209, 102, 0.15);
 }
+
 .event-badge.amber-tag {
   color: #ffa834;
   background: rgba(255, 168, 52, 0.15);
 }
+
 .event-badge.blue-tag {
   color: #38bdf8;
   background: rgba(56, 189, 248, 0.15);
 }
+
 .event-badge.purple-tag {
   color: #c084fc;
   background: rgba(192, 132, 252, 0.15);
@@ -1993,8 +2006,8 @@ dialog.sports-modal-backdrop::backdrop {
 }
 
 .project-link-btn {
-  display: inline-flex;
-  align-items: center;
+  display: flex;
+  align-items: right;
   gap: 0.35rem;
   color: var(--accent-orange);
   font-size: 0.82rem;
