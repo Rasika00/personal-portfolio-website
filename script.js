@@ -326,6 +326,19 @@
       });
     }
 
+    // Support additional modal triggers (from Recognition/Leadership sections)
+    const extraTriggers = document.querySelectorAll('[data-open-sports-modal], .open-sports-modal-trigger');
+    extraTriggers.forEach((trigger) => {
+      if (trigger !== openCard) {
+        trigger.addEventListener('click', openModal);
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            openModal(e);
+          }
+        });
+      }
+    });
+
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (closeFooterBtn) closeFooterBtn.addEventListener('click', closeModal);
 
@@ -346,6 +359,33 @@
     });
   }
 
+  // Technical Certificates Category Filter
+  function initCertFilters() {
+    const filterButtons = document.querySelectorAll('.cert-filter-btn');
+    const cards = document.querySelectorAll('#certGrid .cert-card');
+
+    if (!filterButtons.length || !cards.length) return;
+
+    filterButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-cert-filter');
+
+        cards.forEach((card) => {
+          const category = card.getAttribute('data-category');
+          if (filter === 'all' || category === filter) {
+            card.style.display = 'flex';
+            card.style.animation = 'fadeInCert 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  }
+
   // Initialize
   function init() {
     resizeCanvas();
@@ -353,6 +393,7 @@
     updateScrollProgress();
     initTechAccordion();
     initSportsModal();
+    initCertFilters();
   }
 
   if (document.readyState === 'loading') {
