@@ -10,7 +10,8 @@
   const TOTAL_FRAMES = 180;
   const FRAME_PREFIX = 'frames/ezgif-frame-';
   const FRAME_EXTENSION = '.jpg';
-  const LERP_FACTOR = 0.24; // Fast, responsive tracking that snaps cleanly on stop
+  const isMobile = window.innerWidth <= 768;
+  const LERP_FACTOR = isMobile ? 0.28 : 0.24; // Fast, responsive tracking that snaps cleanly on stop
 
   // DOM Elements
   const canvas = document.getElementById('animation-canvas');
@@ -27,8 +28,8 @@
   let isInitialReady = false;
   const RING_CIRCUMFERENCE = 2 * Math.PI * 42;
 
-  // Controlled Concurrency Worker Pool
-  const MAX_CONCURRENT_DOWNLOADS = 8;
+  // Controlled Concurrency Worker Pool (tuned for mobile network & CPU efficiency)
+  const MAX_CONCURRENT_DOWNLOADS = isMobile ? 3 : 6;
   let activeDownloads = 0;
   const loadQueue = [];
   const queuedSet = new Set();
@@ -115,7 +116,8 @@
   // Reprioritize queue dynamically around current scroll position
   function reprioritizeQueue(targetFrame) {
     if (!loadQueue.length) return;
-    if (targetFrame === lastReprioritizedFrame) return;
+    const threshold = isMobile ? 4 : 2;
+    if (Math.abs(targetFrame - lastReprioritizedFrame) < threshold) return;
     lastReprioritizedFrame = targetFrame;
 
     loadQueue.sort((a, b) => Math.abs(a - targetFrame) - Math.abs(b - targetFrame));
@@ -215,7 +217,13 @@
 
   // Canvas Sizing with Aspect-Ratio-Aware Cover Geometry and Pixel-Perfect DPR
   function resizeCanvas() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const isMobileDevice = window.innerWidth <= 768;
+    // On mobile devices, cap DPR to 1.15 to prevent GPU fill-rate saturation
+    // while maintaining crystal-clear visual fidelity
+    const dpr = isMobileDevice
+      ? Math.min(window.devicePixelRatio || 1, 1.15)
+      : Math.min(window.devicePixelRatio || 1, 2);
+
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
 
@@ -228,7 +236,7 @@
     }
 
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingQuality = isMobileDevice ? 'medium' : 'high';
 
     if (lastRenderedIndex >= 0) {
       drawFrameToCanvas(lastRenderedIndex, true);
@@ -262,8 +270,8 @@
     const match = getBestFrame(frameIndex);
     if (!match) return;
 
-    // Skip redundant drawing only if already showing this exact frame and not forced
-    if (!forceRedraw && lastRenderedIndex === frameIndex && lastRenderedWasExact) {
+    // Eliminate redundant redraws: if this exact image is already on screen and not forced, return immediately!
+    if (!forceRedraw && lastRenderedIndex === match.index) {
       return;
     }
 
@@ -297,9 +305,6 @@
     const dY = Math.round(offsetY);
     const dW = Math.round(drawWidth);
     const dH = Math.round(drawHeight);
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
 
     ctx.drawImage(img, dX, dY, dW, dH);
 
@@ -431,9 +436,21 @@
     }
   }
 
-  // Event Listeners: Full Desktop & Mobile Touch Support
-  window.addEventListener('scroll', updateScrollProgress, { passive: true });
-  window.addEventListener('touchmove', updateScrollProgress, { passive: true });
+  // Event Listeners: RAF-Decoupled Desktop & Mobile Touch Support
+  let isScrollScheduled = false;
+
+  function onScroll() {
+    if (!isScrollScheduled) {
+      isScrollScheduled = true;
+      requestAnimationFrame(() => {
+        updateScrollProgress();
+        isScrollScheduled = false;
+      });
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('touchmove', onScroll, { passive: true });
   if ('onscrollend' in window) {
     window.addEventListener('scrollend', onScrollStop, { passive: true });
   }
@@ -702,11 +719,133 @@
     });
   }
 
+  // Technologies & Languages Strip: Interactive Side Navigation & Touch Swiping
+  function initTechPartnersNav() {
+    const scroller = document.getElementById('partnersScroller');
+    const track = document.getElementById('partnersTrack');
+    const slide1 = document.getElementById('partnersSlide1');
+    const slide2 = document.getElementById('partnersSlide2');
+    const btn1 = document.getElementById('techSlideBtn1');
+    const btn2 = document.getElementById('techSlideBtn2');
+    const prevBtn = document.getElementById('techSlidePrevBtn');
+    const nextBtn = document.getElementById('techSlideNextBtn');
+
+    if (!scroller || !track || !slide1 || !slide2) return;
+
+    let activeSlideIndex = 0;
+    let resumeMarqueeTimer = null;
+
+    function updateActiveUI(idx) {
+      activeSlideIndex = idx;
+      if (btn1) {
+        btn1.classList.toggle('active', idx === 0);
+        btn1.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+      }
+      if (btn2) {
+        btn2.classList.toggle('active', idx === 1);
+        btn2.setAttribute('aria-selected', idx === 1 ? 'true' : 'false');
+      }
+    }
+
+    function navigateToSlide(idx) {
+      updateActiveUI(idx);
+
+      // Pause continuous marquee so the user can inspect the selected slide
+      track.classList.add('paused-marquee');
+
+      const targetSlide = idx === 0 ? slide1 : slide2;
+      const targetLeft = targetSlide.offsetLeft;
+
+      scroller.scrollTo({
+        left: targetLeft,
+        behavior: 'smooth'
+      });
+
+      // Resume auto marquee after 7 seconds of inactivity
+      clearTimeout(resumeMarqueeTimer);
+      resumeMarqueeTimer = setTimeout(() => {
+        track.classList.remove('paused-marquee');
+      }, 7000);
+    }
+
+    if (btn1) {
+      btn1.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToSlide(0);
+      });
+    }
+
+    if (btn2) {
+      btn2.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToSlide(1);
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToSlide(activeSlideIndex === 0 ? 1 : 0);
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateToSlide(activeSlideIndex === 1 ? 0 : 1);
+      });
+    }
+
+    // Mobile Touch Gesture Support (Side Swiping)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isTouchActive = false;
+
+    scroller.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isTouchActive = true;
+    }, { passive: true });
+
+    scroller.addEventListener('touchend', (e) => {
+      if (!isTouchActive) return;
+      isTouchActive = false;
+
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      // Check for horizontal swipe gesture with at least 35px threshold
+      if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX < 0) {
+          // Swipe Left -> Next Slide (Slide 2)
+          navigateToSlide(1);
+        } else {
+          // Swipe Right -> Previous Slide (Slide 1)
+          navigateToSlide(0);
+        }
+      }
+    }, { passive: true });
+
+    // Synchronize UI indicator with user's manual scroll
+    scroller.addEventListener('scroll', () => {
+      if (!track.classList.contains('paused-marquee')) return;
+      const slide2Pos = slide2.offsetLeft;
+      const currentScroll = scroller.scrollLeft;
+      const active = currentScroll >= slide2Pos * 0.45 ? 1 : 0;
+      if (active !== activeSlideIndex) {
+        updateActiveUI(active);
+      }
+    }, { passive: true });
+  }
+
   // Initialize
   function init() {
     resizeCanvas();
     initLoadQueue();
     updateScrollProgress();
+    initTechPartnersNav();
     initTechAccordion();
     initSportsModal();
     initCertFilters();
