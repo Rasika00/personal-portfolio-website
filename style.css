@@ -2356,8 +2356,13 @@ dialog.sports-modal-backdrop::backdrop {
 }
 
 @keyframes spinDot {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Floating Toast Notification */
@@ -2529,6 +2534,7 @@ dialog.sports-modal-backdrop::backdrop {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);

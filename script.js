@@ -90,8 +90,8 @@
 
   // Generate initial distribution across entire timeline
   function initLoadQueue() {
-    // Priority 1: First frame immediately
-    queueFrame(1);
+    // Priority 1: Key storytelling frames immediately!
+    [1, 25, 114, 142, 180].forEach(queueFrame);
 
     // Priority 2: Distributed keyframes across entire scroll journey (every 6 frames)
     for (let i = 6; i <= TOTAL_FRAMES; i += 6) {
@@ -315,25 +315,119 @@
     drawFrameToCanvas(frameIndex);
   }
 
+  // High-clarity storytelling keyframes (1-indexed)
+  // 1: Hero welcoming portrait, direct eye contact, warm confident smile, no glasses
+  // 25: About section: looking attentive towards content cards
+  // 114: Skills / Stack: focused developer mode with glasses on
+  // 142: Projects / Work: confident portfolio presentation with glasses
+  // 180: Contact / Final: direct eye contact, warm welcoming smile with glasses
+  const STORY_KEYFRAMES = [1, 25, 114, 142, 180];
+
+  let sectionPositions = null;
+
+  function updateSectionPositions() {
+    const heroEl = document.getElementById('hero');
+    const aboutEl = document.getElementById('about');
+    const skillsEl = document.getElementById('skills');
+    const workEl = document.getElementById('work');
+    const contactEl = document.getElementById('contact');
+
+    function getAbsTop(el) {
+      if (!el) return 0;
+      let top = 0;
+      let curr = el;
+      while (curr) {
+        top += curr.offsetTop || 0;
+        curr = curr.offsetParent;
+      }
+      return top;
+    }
+
+    const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
+    const aboutTop = aboutEl ? getAbsTop(aboutEl) : heroHeight;
+    const skillsTop = skillsEl ? getAbsTop(skillsEl) : (aboutTop + 550);
+    const workTop = workEl ? getAbsTop(workEl) : (skillsTop + 750);
+    const contactTop = contactEl ? getAbsTop(contactEl) : (workTop + 2200);
+
+    sectionPositions = {
+      heroHoldEnd: Math.max(300, heroHeight * 0.48),
+      aboutTop,
+      skillsTop,
+      workTop,
+      contactTop
+    };
+  }
+
+  function getTargetFrame(scrollTop) {
+    if (!sectionPositions) updateSectionPositions();
+    const { heroHoldEnd, aboutTop, skillsTop, workTop, contactTop } = sectionPositions;
+
+    // 1. Hero Zone: Hold clean Frame 1 throughout the hero section reading area
+    if (scrollTop <= heroHoldEnd) {
+      return 1;
+    }
+
+    // 2. Hero -> About Transition (Frame 1 -> Frame 25)
+    if (scrollTop < aboutTop) {
+      const t = (scrollTop - heroHoldEnd) / Math.max(1, (aboutTop - heroHoldEnd));
+      return 1 + t * (25 - 1);
+    }
+
+    // 3. About Zone -> Skills (Frame 25 -> Frame 114)
+    if (scrollTop < skillsTop) {
+      const t = (scrollTop - aboutTop) / Math.max(1, (skillsTop - aboutTop));
+      return 25 + t * (114 - 25);
+    }
+
+    // 4. Skills Zone -> Work (Frame 114 -> Frame 142)
+    if (scrollTop < workTop) {
+      const t = (scrollTop - skillsTop) / Math.max(1, (workTop - skillsTop));
+      return 114 + t * (142 - 114);
+    }
+
+    // 5. Work -> Contact (Frame 142 -> Frame 180)
+    if (scrollTop < contactTop) {
+      const t = (scrollTop - workTop) / Math.max(1, (contactTop - workTop));
+      return 142 + t * (180 - 142);
+    }
+
+    // 6. Contact Zone: Hold Frame 180
+    return 180;
+  }
+
+  // When scrolling stops, find the closest high-clarity keyframe to eliminate any in-between awkward face
+  function getNearestStoryKeyframe(frame) {
+    let best = STORY_KEYFRAMES[0];
+    let minDiff = Infinity;
+    for (const kf of STORY_KEYFRAMES) {
+      const diff = Math.abs(frame - kf);
+      if (diff < minDiff) {
+        minDiff = diff;
+        best = kf;
+      }
+    }
+    return best;
+  }
+
   // Exact snap when scroll pauses or finishes
   function onScrollStop() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const activeFrame = getTargetFrame(scrollTop);
+
+    // Settle to the nearest pristine, high-clarity keyframe pose
+    const cleanFrame = getNearestStoryKeyframe(activeFrame);
+    targetProgress = (cleanFrame - 1) / (TOTAL_FRAMES - 1);
     currentProgress = targetProgress;
-    const exactFrame = Math.min(
-      TOTAL_FRAMES - 1,
-      Math.max(0, Math.round(targetProgress * (TOTAL_FRAMES - 1)))
-    );
+
+    const frameIdx = cleanFrame - 1;
 
     // Urgently load the exact frame and its immediate neighbors
-    urgentLoadFrame(exactFrame + 1);
-    if (exactFrame > 0) urgentLoadFrame(exactFrame);
-    if (exactFrame < TOTAL_FRAMES - 1) urgentLoadFrame(exactFrame + 2);
+    urgentLoadFrame(cleanFrame);
+    if (cleanFrame > 1) urgentLoadFrame(cleanFrame - 1);
+    if (cleanFrame < TOTAL_FRAMES) urgentLoadFrame(cleanFrame + 1);
 
-    // Force draw exact frame (or closest while urgent loads)
-    drawFrameToCanvas(exactFrame, true);
-
-    if (progressBar) {
-      progressBar.style.width = `${(currentProgress * 100).toFixed(2)}%`;
-    }
+    // Force draw the clean frame
+    drawFrameToCanvas(frameIdx, true);
 
     isLoopRunning = false;
   }
@@ -343,24 +437,27 @@
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     const maxScroll = (document.documentElement.scrollHeight || document.body.scrollHeight) - window.innerHeight;
 
-    if (maxScroll > 0) {
-      targetProgress = Math.max(0, Math.min(1, scrollTop / maxScroll));
-    } else {
-      targetProgress = 0;
-    }
+    // Calculate story-driven target frame based on current section
+    const targetStoryFrame = getTargetFrame(scrollTop);
+    targetProgress = (targetStoryFrame - 1) / (TOTAL_FRAMES - 1);
 
-    const currentTargetFrame = Math.round(targetProgress * (TOTAL_FRAMES - 1)) + 1;
+    const currentTargetFrame = Math.round(targetStoryFrame);
     reprioritizeQueue(currentTargetFrame);
 
     if (navbar) {
       navbar.classList.toggle('scrolled', scrollTop > 20);
     }
 
+    if (progressBar && maxScroll > 0) {
+      const scrollRatio = Math.max(0, Math.min(1, scrollTop / maxScroll));
+      progressBar.style.width = `${(scrollRatio * 100).toFixed(2)}%`;
+    }
+
     startAnimationLoop();
 
-    // Fast-settling scroll stop detector
+    // Fast-settling scroll stop detector: snaps to clean story keyframe
     clearTimeout(scrollStopTimer);
-    scrollStopTimer = setTimeout(onScrollStop, 80);
+    scrollStopTimer = setTimeout(onScrollStop, 90);
   }
 
   // RAF Lerp Loop
@@ -375,9 +472,6 @@
         Math.max(0, Math.round(targetProgress * (TOTAL_FRAMES - 1)))
       );
       drawFrameToCanvas(exactFrame, !lastRenderedWasExact);
-      if (progressBar) {
-        progressBar.style.width = `${(currentProgress * 100).toFixed(2)}%`;
-      }
       isLoopRunning = false;
       return;
     }
@@ -391,10 +485,6 @@
 
     if (frameIndex !== lastRenderedIndex || !lastRenderedWasExact) {
       drawFrameToCanvas(frameIndex);
-    }
-
-    if (progressBar) {
-      progressBar.style.width = `${(currentProgress * 100).toFixed(2)}%`;
     }
 
     requestAnimationFrame(tick);
@@ -416,6 +506,7 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
+      updateSectionPositions();
       resizeCanvas();
       updateScrollProgress();
     }, 50);
@@ -674,6 +765,7 @@
 
   // Initialize
   function init() {
+    updateSectionPositions();
     resizeCanvas();
     initLoadQueue();
     updateScrollProgress();
