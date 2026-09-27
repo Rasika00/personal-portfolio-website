@@ -431,11 +431,12 @@ body {
 .highlight-machines {
   font-family: var(--font-serif);
   font-style: italic;
-  font-weight: 600;
-  background: linear-gradient(135deg, #ffa834 0%, #ff5e3a 60%, #ff2a54 100%);
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #ffe58f 38%, #ffa834 85%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 168, 52, 0.35));
 }
 
 .hero-subtitle {
