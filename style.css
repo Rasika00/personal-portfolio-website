@@ -705,7 +705,7 @@ body {
 }
 
 /* =========================================================================
-   Technologies & Languages Strip — Moving Right Continuous Marquee & Side Navigation
+   Technologies & Languages Strip — Moving Right Continuous Marquee
    ========================================================================= */
 .hero-partners-strip {
   margin-top: 3.5rem;
@@ -714,8 +714,8 @@ body {
   margin-bottom: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  align-items: center;
+  gap: 2.25rem;
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -733,15 +733,6 @@ body {
     opacity: 1;
     transform: translateX(0);
   }
-}
-
-.partners-header-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 1rem;
-  flex-wrap: wrap;
 }
 
 .partners-label {
@@ -781,101 +772,14 @@ body {
   }
 }
 
-/* Side Navigation Controls for Slide 1 & Slide 2 */
-.partners-nav-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.partners-slide-indicators {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 0.25rem 0.35rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.slide-indicator-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-dim);
-  font-family: var(--font-body);
-  font-size: 0.76rem;
-  font-weight: 600;
-  padding: 0.25rem 0.85rem;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.slide-indicator-btn:hover {
-  color: #ffffff;
-}
-
-.slide-indicator-btn.active {
-  background: linear-gradient(135deg, rgba(255, 94, 58, 0.32), rgba(255, 168, 52, 0.24));
-  color: #ffffff;
-  border-color: rgba(255, 94, 58, 0.5);
-  box-shadow: 0 2px 10px rgba(255, 94, 58, 0.3);
-}
-
-.partners-nav-arrows {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.partners-nav-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.partners-nav-btn:hover {
-  background: rgba(255, 94, 58, 0.22);
-  border-color: rgba(255, 94, 58, 0.5);
-  color: #ffffff;
-  transform: scale(1.08);
-}
-
-.partners-nav-btn:active {
-  transform: scale(0.94);
-}
-
-/* Scroller container with modern edge fade masks and mobile touch swiping */
+/* Scroller container with modern edge fade masks */
 .partners-scroller {
   flex: 1;
   min-width: 0;
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: hidden;
   position: relative;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  scroll-behavior: smooth;
-  mask-image: linear-gradient(to right, transparent 0%, black 36px, black calc(100% - 36px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 36px, black calc(100% - 36px), transparent 100%);
-}
-
-.partners-scroller::-webkit-scrollbar {
-  display: none;
+  mask-image: linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%);
 }
 
 /* Continuous Moving Right Track */
@@ -884,11 +788,6 @@ body {
   width: max-content;
   will-change: transform;
   animation: marqueeMoveRight 36s linear infinite;
-}
-
-/* Paused marquee state when manually navigating */
-.partners-track.paused-marquee {
-  animation: none !important;
 }
 
 /* Hover pauses the marquee only on pointer devices with real hover */
@@ -3151,41 +3050,16 @@ dialog.sports-modal-backdrop::backdrop {
 
   .hero-partners-strip {
     flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
+    align-items: flex-start;
+    gap: 1.25rem;
     margin-top: 2.5rem;
     padding-top: 1.5rem;
   }
 
-  .partners-header-bar {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-  }
-
   .partners-label {
-    font-size: 0.74rem;
-    padding: 0.35rem 0.8rem;
-    letter-spacing: 0.12em;
-  }
-
-  .partners-nav-controls {
-    gap: 0.5rem;
-  }
-
-  .partners-slide-indicators {
-    padding: 0.2rem 0.25rem;
-  }
-
-  .slide-indicator-btn {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.6rem;
-  }
-
-  .partners-nav-btn {
-    width: 28px;
-    height: 28px;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.9rem;
+    letter-spacing: 0.14em;
   }
 
   .partners-scroller {
