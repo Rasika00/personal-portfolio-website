@@ -40,24 +40,61 @@
     return `${FRAME_PREFIX}${padded}${FRAME_EXTENSION}`;
   }
 
-  // Preload frames progressively
-  function preloadImages() {
+  // Generate prioritized frame loading order: Keyframes first across the entire timeline, then midpoints, then remaining
+  function getPreloadOrder() {
+    const order = [];
+    const added = new Set();
+
+    function addFrame(i) {
+      if (i >= 1 && i <= TOTAL_FRAMES && !added.has(i)) {
+        added.add(i);
+        order.push(i);
+      }
+    }
+
+    // Always start with the first frame
+    addFrame(1);
+
+    // Tier 1: Major key checkpoints distributed across entire scroll journey (every 10 frames)
+    for (let i = 10; i <= TOTAL_FRAMES; i += 10) {
+      addFrame(i);
+    }
+    addFrame(TOTAL_FRAMES);
+
+    // Tier 2: Midpoints for fluid transitions (every 5 frames)
+    for (let i = 5; i <= TOTAL_FRAMES; i += 5) {
+      addFrame(i);
+    }
+
+    // Tier 3: All remaining frames to reach full 60fps fidelity
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
+      addFrame(i);
+    }
+
+    return order;
+  }
+
+  // Preload frames progressively with priority-first streaming
+  function preloadImages() {
+    const order = getPreloadOrder();
+    const KEY_BATCH_THRESHOLD = 12;
+
+    order.forEach((frameNum) => {
       const img = new Image();
-      img.src = getFramePath(i);
+      img.src = getFramePath(frameNum);
 
       img.onload = () => {
-        images[i - 1] = img;
+        images[frameNum - 1] = img;
         loadedCount++;
 
         // Draw initial frame immediately once frame 1 is ready
-        if (i === 1 && !isInitialReady) {
+        if (frameNum === 1 && !isInitialReady) {
           resizeCanvas();
           renderFrame(0);
         }
 
-        // Once initial batch is ready, dismiss preloader
-        if (loadedCount >= 4 && !isInitialReady) {
+        // Once key checkpoints across the page are ready, dismiss preloader for instant interaction
+        if (loadedCount >= KEY_BATCH_THRESHOLD && !isInitialReady) {
           isInitialReady = true;
           dismissLoader();
         }
@@ -72,11 +109,15 @@
       img.onerror = () => {
         loadedCount++;
         updateLoaderProgress();
+        if (loadedCount >= KEY_BATCH_THRESHOLD && !isInitialReady) {
+          isInitialReady = true;
+          dismissLoader();
+        }
         if (loadedCount === TOTAL_FRAMES) {
           dismissLoader();
         }
       };
-    }
+    });
   }
 
   function updateLoaderProgress() {

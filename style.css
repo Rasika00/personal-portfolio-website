@@ -1324,6 +1324,11 @@ body {
   box-shadow: 0 0 6px rgba(192, 132, 252, 0.7);
 }
 
+.ai-indicator {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+}
+
 .tech-badge-cloud {
   display: flex;
   flex-wrap: wrap;
