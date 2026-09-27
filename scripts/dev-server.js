@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, {
       'Content-Type': contentType,
       'Content-Length': stats.size,
-      'Cache-Control': ext === '.png' ? 'public, max-age=86400' : 'no-cache',
+      'Cache-Control': (ext === '.jpg' || ext === '.png') ? 'public, max-age=86400' : 'no-cache',
       'Access-Control-Allow-Origin': '*'
     });
 

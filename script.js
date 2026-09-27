@@ -10,7 +10,7 @@
   const TOTAL_FRAMES = 180;
   const FRAME_PREFIX = 'frames/ezgif-frame-';
   const FRAME_EXTENSION = '.jpg';
-  const LERP_FACTOR = 0.18; // Smooth, cinematic tracking that responds effortlessly
+  const LERP_FACTOR = 0.24; // Fast, responsive tracking that snaps cleanly on stop
 
   // DOM Elements
   const canvas = document.getElementById('animation-canvas');
@@ -28,19 +28,22 @@
   const RING_CIRCUMFERENCE = 2 * Math.PI * 42;
 
   // Controlled Concurrency Worker Pool
-  const MAX_CONCURRENT_DOWNLOADS = 6;
+  const MAX_CONCURRENT_DOWNLOADS = 8;
   let activeDownloads = 0;
   const loadQueue = [];
   const queuedSet = new Set();
   const loadedSet = new Set();
+  const activeSet = new Set();
   let lastReprioritizedFrame = -1;
 
   // Animation State
   let targetProgress = 0;
   let currentProgress = 0;
-  let lastRenderedFrame = -1;
+  let lastRenderedIndex = -1;
+  let lastRenderedWasExact = false;
   let isLoopRunning = false;
   let resizeTimeout = null;
+  let scrollStopTimer = null;
 
   // Format frame path: 1 -> "frames/ezgif-frame-001.jpg"
   function getFramePath(index) {
@@ -54,6 +57,35 @@
     if (loadedSet.has(frameNum) || queuedSet.has(frameNum)) return;
     queuedSet.add(frameNum);
     loadQueue.push(frameNum);
+  }
+
+  // Urgently prioritize and load a specific frame right away
+  function urgentLoadFrame(frameNum) {
+    if (frameNum < 1 || frameNum > TOTAL_FRAMES) return;
+    if (loadedSet.has(frameNum)) return;
+
+    // Move to front of queue if already present
+    const idx = loadQueue.indexOf(frameNum);
+    if (idx > -1) {
+      loadQueue.splice(idx, 1);
+    } else {
+      queuedSet.add(frameNum);
+    }
+    loadQueue.unshift(frameNum);
+
+    // If already downloading, wait for it
+    if (activeSet.has(frameNum)) return;
+
+    // Immediately trigger download
+    if (activeDownloads < MAX_CONCURRENT_DOWNLOADS) {
+      processQueue();
+    } else {
+      // Force start this frame as high priority
+      loadQueue.shift();
+      queuedSet.delete(frameNum);
+      activeDownloads++;
+      loadSingleFrame(frameNum);
+    }
   }
 
   // Generate initial distribution across entire timeline
@@ -83,7 +115,7 @@
   // Reprioritize queue dynamically around current scroll position
   function reprioritizeQueue(targetFrame) {
     if (!loadQueue.length) return;
-    if (Math.abs(targetFrame - lastReprioritizedFrame) < 3) return;
+    if (targetFrame === lastReprioritizedFrame) return;
     lastReprioritizedFrame = targetFrame;
 
     loadQueue.sort((a, b) => Math.abs(a - targetFrame) - Math.abs(b - targetFrame));
@@ -102,6 +134,7 @@
   }
 
   function loadSingleFrame(frameNum) {
+    activeSet.add(frameNum);
     const img = new Image();
     img.src = getFramePath(frameNum);
 
@@ -116,12 +149,13 @@
       img._ready = true;
       images[frameNum - 1] = img;
       loadedSet.add(frameNum);
+      activeSet.delete(frameNum);
       loadedCount++;
 
       // Instant reveal: Render Frame 1 immediately and dismiss loader
       if (frameNum === 1 && !isInitialReady) {
         resizeCanvas();
-        drawFrameToCanvas(0);
+        drawFrameToCanvas(0, true);
         isInitialReady = true;
         dismissLoader();
       }
@@ -134,12 +168,27 @@
 
       updateLoaderProgress();
       activeDownloads--;
+
+      // EXACT STOP FRAME UPGRADE:
+      // When this frame finishes loading, check if the user is currently resting on it
+      // or if the canvas is currently displaying an imprecise fallback neighbor.
+      // If so, instantly re-render with this crisp, exact frame!
+      const currentTargetIndex = Math.min(
+        TOTAL_FRAMES - 1,
+        Math.max(0, Math.round(targetProgress * (TOTAL_FRAMES - 1)))
+      );
+
+      if (frameNum - 1 === currentTargetIndex || (!lastRenderedWasExact && Math.abs(frameNum - 1 - currentTargetIndex) < Math.abs(lastRenderedIndex - currentTargetIndex))) {
+        drawFrameToCanvas(currentTargetIndex, true);
+      }
+
       processQueue();
     };
 
     img.onload = onComplete;
     img.onerror = () => {
       loadedSet.add(frameNum);
+      activeSet.delete(frameNum);
       activeDownloads--;
       processQueue();
     };
@@ -164,53 +213,69 @@
     startAnimationLoop();
   }
 
-  // Canvas Sizing with Aspect-Ratio-Aware Cover Geometry and DPR Capping (Prevents 4K lag)
+  // Canvas Sizing with Aspect-Ratio-Aware Cover Geometry and Pixel-Perfect DPR
   function resizeCanvas() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
 
-    canvas.width = Math.floor(displayWidth * dpr);
-    canvas.height = Math.floor(displayHeight * dpr);
+    const targetWidth = Math.round(displayWidth * dpr);
+    const targetHeight = Math.round(displayHeight * dpr);
+
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+    }
+
+    // Lock CSS layout size to viewport to prevent browser compositor stretching blur
+    canvas.style.width = `${displayWidth}px`;
+    canvas.style.height = `${displayHeight}px`;
 
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'medium';
+    ctx.imageSmoothingQuality = 'high';
 
-    if (lastRenderedFrame >= 0) {
-      drawFrameToCanvas(lastRenderedFrame);
+    if (lastRenderedIndex >= 0) {
+      drawFrameToCanvas(lastRenderedIndex, true);
     } else {
-      drawFrameToCanvas(0);
+      drawFrameToCanvas(0, true);
     }
   }
 
   // Find nearest loaded image if target frame is still downloading
   function getBestFrame(targetIndex) {
     if (images[targetIndex] && images[targetIndex]._ready) {
-      return { img: images[targetIndex], index: targetIndex };
+      return { img: images[targetIndex], index: targetIndex, isExact: true };
     }
 
     // Search outwards for nearest loaded frame
     for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
       const prev = targetIndex - offset;
       if (prev >= 0 && images[prev] && images[prev]._ready) {
-        return { img: images[prev], index: prev };
+        return { img: images[prev], index: prev, isExact: false };
       }
       const next = targetIndex + offset;
       if (next < TOTAL_FRAMES && images[next] && images[next]._ready) {
-        return { img: images[next], index: next };
+        return { img: images[next], index: next, isExact: false };
       }
     }
     return null;
   }
 
   // Draw frame to canvas with centered cover geometry (zero redundant full-screen clears)
-  function drawFrameToCanvas(frameIndex) {
+  function drawFrameToCanvas(frameIndex, forceRedraw = false) {
     const match = getBestFrame(frameIndex);
     if (!match) return;
+
+    // Skip redundant drawing only if already showing this exact frame and not forced
+    if (!forceRedraw && lastRenderedIndex === frameIndex && lastRenderedWasExact) {
+      return;
+    }
 
     const img = match.img;
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
+    if (canvasWidth === 0 || canvasHeight === 0) return;
+
     const imgWidth = img.naturalWidth || 1600;
     const imgHeight = img.naturalHeight || 900;
 
@@ -231,12 +296,46 @@
       offsetY = 0;
     }
 
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-    lastRenderedFrame = frameIndex;
+    // Integer rounding eliminates subpixel anti-aliasing blur
+    const dX = Math.round(offsetX);
+    const dY = Math.round(offsetY);
+    const dW = Math.round(drawWidth);
+    const dH = Math.round(drawHeight);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    ctx.drawImage(img, dX, dY, dW, dH);
+
+    lastRenderedIndex = match.index;
+    lastRenderedWasExact = match.isExact;
   }
 
   function renderFrame(frameIndex) {
     drawFrameToCanvas(frameIndex);
+  }
+
+  // Exact snap when scroll pauses or finishes
+  function onScrollStop() {
+    currentProgress = targetProgress;
+    const exactFrame = Math.min(
+      TOTAL_FRAMES - 1,
+      Math.max(0, Math.round(targetProgress * (TOTAL_FRAMES - 1)))
+    );
+
+    // Urgently load the exact frame and its immediate neighbors
+    urgentLoadFrame(exactFrame + 1);
+    if (exactFrame > 0) urgentLoadFrame(exactFrame);
+    if (exactFrame < TOTAL_FRAMES - 1) urgentLoadFrame(exactFrame + 2);
+
+    // Force draw exact frame (or closest while urgent loads)
+    drawFrameToCanvas(exactFrame, true);
+
+    if (progressBar) {
+      progressBar.style.width = `${(currentProgress * 100).toFixed(2)}%`;
+    }
+
+    isLoopRunning = false;
   }
 
   // Update target progress from window scroll position
@@ -258,11 +357,31 @@
     }
 
     startAnimationLoop();
+
+    // Fast-settling scroll stop detector
+    clearTimeout(scrollStopTimer);
+    scrollStopTimer = setTimeout(onScrollStop, 80);
   }
 
   // RAF Lerp Loop
   function tick() {
     const delta = targetProgress - currentProgress;
+
+    // Fast, crisp snap when nearing the stop point to prevent drifting blur
+    if (Math.abs(delta) < 0.0003) {
+      currentProgress = targetProgress;
+      const exactFrame = Math.min(
+        TOTAL_FRAMES - 1,
+        Math.max(0, Math.round(targetProgress * (TOTAL_FRAMES - 1)))
+      );
+      drawFrameToCanvas(exactFrame, !lastRenderedWasExact);
+      if (progressBar) {
+        progressBar.style.width = `${(currentProgress * 100).toFixed(2)}%`;
+      }
+      isLoopRunning = false;
+      return;
+    }
+
     currentProgress += delta * LERP_FACTOR;
 
     const frameIndex = Math.min(
@@ -270,26 +389,12 @@
       Math.max(0, Math.round(currentProgress * (TOTAL_FRAMES - 1)))
     );
 
-    if (frameIndex !== lastRenderedFrame) {
+    if (frameIndex !== lastRenderedIndex || !lastRenderedWasExact) {
       drawFrameToCanvas(frameIndex);
     }
 
     if (progressBar) {
       progressBar.style.width = `${(currentProgress * 100).toFixed(2)}%`;
-    }
-
-    // Stop loop when resting to save CPU/GPU power
-    if (Math.abs(delta) < 0.00015) {
-      currentProgress = targetProgress;
-      const finalFrame = Math.min(
-        TOTAL_FRAMES - 1,
-        Math.max(0, Math.round(currentProgress * (TOTAL_FRAMES - 1)))
-      );
-      if (finalFrame !== lastRenderedFrame) {
-        drawFrameToCanvas(finalFrame);
-      }
-      isLoopRunning = false;
-      return;
     }
 
     requestAnimationFrame(tick);
@@ -304,6 +409,9 @@
 
   // Event Listeners
   window.addEventListener('scroll', updateScrollProgress, { passive: true });
+  if ('onscrollend' in window) {
+    window.addEventListener('scrollend', onScrollStop, { passive: true });
+  }
 
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
