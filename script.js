@@ -9,8 +9,8 @@
   // Configuration
   const TOTAL_FRAMES = 180;
   const FRAME_PREFIX = 'frames/ezgif-frame-';
-  const FRAME_EXTENSION = '.png';
-  const LERP_FACTOR = 0.095; // Buttery smooth momentum
+  const FRAME_EXTENSION = '.jpg';
+  const LERP_FACTOR = 0.22; // Ultra-responsive, crisp momentum without scroll lag
 
   // DOM Elements
   const canvas = document.getElementById('animation-canvas');
