@@ -2416,6 +2416,79 @@ dialog.sports-modal-backdrop::backdrop {
   box-shadow: 0 0 14px rgba(255, 94, 58, 0.15);
 }
 
+.cert-mark.cisco-mark {
+  background: rgba(0, 188, 235, 0.12);
+  border-color: rgba(0, 188, 235, 0.35);
+  color: #00bceb;
+  box-shadow: 0 0 16px rgba(0, 188, 235, 0.2);
+}
+
+.cert-mark.udemy-mark {
+  background: rgba(164, 53, 240, 0.12);
+  border-color: rgba(164, 53, 240, 0.35);
+  color: #cf70ff;
+  box-shadow: 0 0 16px rgba(164, 53, 240, 0.2);
+}
+
+.cert-mark.oracle-mark {
+  background: rgba(218, 56, 32, 0.14);
+  border-color: rgba(218, 56, 32, 0.4);
+  color: #ff5238;
+  box-shadow: 0 0 16px rgba(218, 56, 32, 0.2);
+}
+
+.cert-tags-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.cert-badge-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.12);
+}
+
+.cert-badge-udemy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #d080ff;
+  background: rgba(164, 53, 240, 0.1);
+  border: 1px solid rgba(164, 53, 240, 0.28);
+  box-shadow: 0 0 10px rgba(164, 53, 240, 0.12);
+}
+
+.cert-badge-oracle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #ff6b52;
+  background: rgba(218, 56, 32, 0.12);
+  border: 1px solid rgba(218, 56, 32, 0.32);
+  box-shadow: 0 0 10px rgba(218, 56, 32, 0.15);
+}
+
 .cert-category {
   padding: 0.25rem 0.65rem;
   border: 1px solid rgba(255, 255, 255, 0.12);

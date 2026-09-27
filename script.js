@@ -374,8 +374,9 @@
         const filter = btn.getAttribute('data-cert-filter');
 
         cards.forEach((card) => {
-          const category = card.getAttribute('data-category');
-          if (filter === 'all' || category === filter) {
+          const categoryStr = card.getAttribute('data-category') || '';
+          const categories = categoryStr.trim().split(/\s+/);
+          if (filter === 'all' || categories.includes(filter)) {
             card.style.display = 'flex';
             card.style.animation = 'fadeInCert 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
           } else {
