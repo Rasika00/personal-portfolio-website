@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "node dev-server.js"
+    "build": "echo 'Static build ready'",
+    "dev": "node scripts/dev-server.js"
   }
 }

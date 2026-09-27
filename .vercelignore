@@ -1,0 +1,5 @@
+scripts/
+.git
+.DS_Store
+Thumbs.db
+*.log
