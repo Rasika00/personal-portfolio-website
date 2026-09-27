@@ -227,10 +227,6 @@
       canvas.height = targetHeight;
     }
 
-    // Lock CSS layout size to viewport to prevent browser compositor stretching blur
-    canvas.style.width = `${displayWidth}px`;
-    canvas.style.height = `${displayHeight}px`;
-
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
@@ -315,107 +311,28 @@
     drawFrameToCanvas(frameIndex);
   }
 
-  // High-clarity storytelling keyframes (1-indexed)
-  // 1: Hero welcoming portrait, direct eye contact, warm confident smile, no glasses
-  // 25: About section: looking attentive towards content cards
-  // 114: Skills / Stack: focused developer mode with glasses on
-  // 142: Projects / Work: confident portfolio presentation with glasses
-  // 180: Contact / Final: direct eye contact, warm welcoming smile with glasses
-  const STORY_KEYFRAMES = [1, 25, 114, 142, 180];
-
-  let sectionPositions = null;
-
-  function updateSectionPositions() {
-    const heroEl = document.getElementById('hero');
-    const aboutEl = document.getElementById('about');
-    const skillsEl = document.getElementById('skills');
-    const workEl = document.getElementById('work');
-    const contactEl = document.getElementById('contact');
-
-    function getAbsTop(el) {
-      if (!el) return 0;
-      let top = 0;
-      let curr = el;
-      while (curr) {
-        top += curr.offsetTop || 0;
-        curr = curr.offsetParent;
-      }
-      return top;
+  // Normalize resting frame when stopping: avoids awkward transitional frames (eye-roll or blink)
+  function getCleanRestingFrame(frameNum) {
+    // Range 1: Frames 6 to 18 (eyes rolling sideways / mouth half-turned)
+    if (frameNum >= 6 && frameNum <= 18) {
+      return frameNum <= 11 ? 1 : 22;
     }
-
-    const heroHeight = heroEl ? heroEl.offsetHeight : window.innerHeight;
-    const aboutTop = aboutEl ? getAbsTop(aboutEl) : heroHeight;
-    const skillsTop = skillsEl ? getAbsTop(skillsEl) : (aboutTop + 550);
-    const workTop = workEl ? getAbsTop(workEl) : (skillsTop + 750);
-    const contactTop = contactEl ? getAbsTop(contactEl) : (workTop + 2200);
-
-    sectionPositions = {
-      heroHoldEnd: Math.max(300, heroHeight * 0.48),
-      aboutTop,
-      skillsTop,
-      workTop,
-      contactTop
-    };
-  }
-
-  function getTargetFrame(scrollTop) {
-    if (!sectionPositions) updateSectionPositions();
-    const { heroHoldEnd, aboutTop, skillsTop, workTop, contactTop } = sectionPositions;
-
-    // 1. Hero Zone: Hold clean Frame 1 throughout the hero section reading area
-    if (scrollTop <= heroHoldEnd) {
-      return 1;
+    // Range 2: Frames 123 to 127 (eyes closed in blink)
+    if (frameNum >= 123 && frameNum <= 127) {
+      return 130;
     }
-
-    // 2. Hero -> About Transition (Frame 1 -> Frame 25)
-    if (scrollTop < aboutTop) {
-      const t = (scrollTop - heroHoldEnd) / Math.max(1, (aboutTop - heroHoldEnd));
-      return 1 + t * (25 - 1);
-    }
-
-    // 3. About Zone -> Skills (Frame 25 -> Frame 114)
-    if (scrollTop < skillsTop) {
-      const t = (scrollTop - aboutTop) / Math.max(1, (skillsTop - aboutTop));
-      return 25 + t * (114 - 25);
-    }
-
-    // 4. Skills Zone -> Work (Frame 114 -> Frame 142)
-    if (scrollTop < workTop) {
-      const t = (scrollTop - skillsTop) / Math.max(1, (workTop - skillsTop));
-      return 114 + t * (142 - 114);
-    }
-
-    // 5. Work -> Contact (Frame 142 -> Frame 180)
-    if (scrollTop < contactTop) {
-      const t = (scrollTop - workTop) / Math.max(1, (contactTop - workTop));
-      return 142 + t * (180 - 142);
-    }
-
-    // 6. Contact Zone: Hold Frame 180
-    return 180;
-  }
-
-  // When scrolling stops, find the closest high-clarity keyframe to eliminate any in-between awkward face
-  function getNearestStoryKeyframe(frame) {
-    let best = STORY_KEYFRAMES[0];
-    let minDiff = Infinity;
-    for (const kf of STORY_KEYFRAMES) {
-      const diff = Math.abs(frame - kf);
-      if (diff < minDiff) {
-        minDiff = diff;
-        best = kf;
-      }
-    }
-    return best;
+    return frameNum;
   }
 
   // Exact snap when scroll pauses or finishes
   function onScrollStop() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const activeFrame = getTargetFrame(scrollTop);
+    const rawFrame = Math.min(
+      TOTAL_FRAMES,
+      Math.max(1, Math.round(targetProgress * (TOTAL_FRAMES - 1)) + 1)
+    );
 
-    // Settle to the nearest pristine, high-clarity keyframe pose
-    const cleanFrame = getNearestStoryKeyframe(activeFrame);
+    // Sanitize frame so user never rests on an awkward moment
+    const cleanFrame = getCleanRestingFrame(rawFrame);
     targetProgress = (cleanFrame - 1) / (TOTAL_FRAMES - 1);
     currentProgress = targetProgress;
 
@@ -432,30 +349,47 @@
     isLoopRunning = false;
   }
 
-  // Update target progress from window scroll position
+  // Update target progress from window scroll position (Desktop & Mobile)
   function updateScrollProgress() {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     const maxScroll = (document.documentElement.scrollHeight || document.body.scrollHeight) - window.innerHeight;
 
-    // Calculate story-driven target frame based on current section
-    const targetStoryFrame = getTargetFrame(scrollTop);
-    targetProgress = (targetStoryFrame - 1) / (TOTAL_FRAMES - 1);
+    if (maxScroll <= 0) {
+      targetProgress = 0;
+      return;
+    }
 
-    const currentTargetFrame = Math.round(targetStoryFrame);
+    const rawProgress = Math.max(0, Math.min(1, scrollTop / maxScroll));
+
+    // Hero Comfort Deadzone:
+    // For the initial reading zone of the hero section (~3.5% of total page scroll),
+    // hold Frame 1 active so Rasika looks directly at the visitor with eye contact.
+    // Beyond that, seamlessly map across all 180 frames for fluid 60fps continuous animation!
+    const HERO_DEADZONE = 0.035;
+    let animatedProgress = 0;
+    if (rawProgress > HERO_DEADZONE) {
+      animatedProgress = (rawProgress - HERO_DEADZONE) / (1 - HERO_DEADZONE);
+    }
+
+    targetProgress = animatedProgress;
+
+    const currentTargetFrame = Math.min(
+      TOTAL_FRAMES,
+      Math.max(1, Math.round(targetProgress * (TOTAL_FRAMES - 1)) + 1)
+    );
     reprioritizeQueue(currentTargetFrame);
 
     if (navbar) {
       navbar.classList.toggle('scrolled', scrollTop > 20);
     }
 
-    if (progressBar && maxScroll > 0) {
-      const scrollRatio = Math.max(0, Math.min(1, scrollTop / maxScroll));
-      progressBar.style.width = `${(scrollRatio * 100).toFixed(2)}%`;
+    if (progressBar) {
+      progressBar.style.width = `${(rawProgress * 100).toFixed(2)}%`;
     }
 
     startAnimationLoop();
 
-    // Fast-settling scroll stop detector: snaps to clean story keyframe
+    // Settle cleanly when scroll stops
     clearTimeout(scrollStopTimer);
     scrollStopTimer = setTimeout(onScrollStop, 90);
   }
@@ -464,12 +398,12 @@
   function tick() {
     const delta = targetProgress - currentProgress;
 
-    // Fast, crisp snap when nearing the stop point to prevent drifting blur
+    // Smooth, responsive tracking
     if (Math.abs(delta) < 0.0003) {
       currentProgress = targetProgress;
       const exactFrame = Math.min(
         TOTAL_FRAMES - 1,
-        Math.max(0, Math.round(targetProgress * (TOTAL_FRAMES - 1)))
+        Math.max(0, Math.round(currentProgress * (TOTAL_FRAMES - 1)))
       );
       drawFrameToCanvas(exactFrame, !lastRenderedWasExact);
       isLoopRunning = false;
@@ -497,8 +431,9 @@
     }
   }
 
-  // Event Listeners
+  // Event Listeners: Full Desktop & Mobile Touch Support
   window.addEventListener('scroll', updateScrollProgress, { passive: true });
+  window.addEventListener('touchmove', updateScrollProgress, { passive: true });
   if ('onscrollend' in window) {
     window.addEventListener('scrollend', onScrollStop, { passive: true });
   }
@@ -506,11 +441,15 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
-      updateSectionPositions();
       resizeCanvas();
       updateScrollProgress();
     }, 50);
   }, { passive: true });
+
+  window.addEventListener('load', () => {
+    resizeCanvas();
+    updateScrollProgress();
+  });
 
   // Smooth keyboard navigation support
   window.addEventListener('keydown', (e) => {
@@ -765,7 +704,6 @@
 
   // Initialize
   function init() {
-    updateSectionPositions();
     resizeCanvas();
     initLoadQueue();
     updateScrollProgress();
