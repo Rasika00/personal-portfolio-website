@@ -10,22 +10,30 @@
   const TOTAL_FRAMES = 180;
   const FRAME_PREFIX = 'frames/ezgif-frame-';
   const FRAME_EXTENSION = '.jpg';
-  const LERP_FACTOR = 0.22; // Ultra-responsive, crisp momentum without scroll lag
+  const LERP_FACTOR = 0.18; // Smooth, cinematic tracking that responds effortlessly
 
   // DOM Elements
   const canvas = document.getElementById('animation-canvas');
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
   const loader = document.getElementById('loader');
   const progressRing = document.getElementById('progress-ring');
   const progressText = document.getElementById('progress-text');
   const progressBar = document.getElementById('scroll-bar');
   const navbar = document.querySelector('.navbar');
 
-  // Image Cache
+  // Image Cache & Network Queue State
   const images = new Array(TOTAL_FRAMES);
   let loadedCount = 0;
   let isInitialReady = false;
   const RING_CIRCUMFERENCE = 2 * Math.PI * 42;
+
+  // Controlled Concurrency Worker Pool
+  const MAX_CONCURRENT_DOWNLOADS = 6;
+  let activeDownloads = 0;
+  const loadQueue = [];
+  const queuedSet = new Set();
+  const loadedSet = new Set();
+  let lastReprioritizedFrame = -1;
 
   // Animation State
   let targetProgress = 0;
@@ -34,90 +42,107 @@
   let isLoopRunning = false;
   let resizeTimeout = null;
 
-  // Format frame path: 1 -> "frames/ezgif-frame-001.png"
+  // Format frame path: 1 -> "frames/ezgif-frame-001.jpg"
   function getFramePath(index) {
     const padded = String(index).padStart(3, '0');
     return `${FRAME_PREFIX}${padded}${FRAME_EXTENSION}`;
   }
 
-  // Generate prioritized frame loading order: Keyframes first across the entire timeline, then midpoints, then remaining
-  function getPreloadOrder() {
-    const order = [];
-    const added = new Set();
-
-    function addFrame(i) {
-      if (i >= 1 && i <= TOTAL_FRAMES && !added.has(i)) {
-        added.add(i);
-        order.push(i);
-      }
-    }
-
-    // Always start with the first frame
-    addFrame(1);
-
-    // Tier 1: Major key checkpoints distributed across entire scroll journey (every 10 frames)
-    for (let i = 10; i <= TOTAL_FRAMES; i += 10) {
-      addFrame(i);
-    }
-    addFrame(TOTAL_FRAMES);
-
-    // Tier 2: Midpoints for fluid transitions (every 5 frames)
-    for (let i = 5; i <= TOTAL_FRAMES; i += 5) {
-      addFrame(i);
-    }
-
-    // Tier 3: All remaining frames to reach full 60fps fidelity
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      addFrame(i);
-    }
-
-    return order;
+  // Queue frame helper
+  function queueFrame(frameNum) {
+    if (frameNum < 1 || frameNum > TOTAL_FRAMES) return;
+    if (loadedSet.has(frameNum) || queuedSet.has(frameNum)) return;
+    queuedSet.add(frameNum);
+    loadQueue.push(frameNum);
   }
 
-  // Preload frames progressively with priority-first streaming
-  function preloadImages() {
-    const order = getPreloadOrder();
-    const KEY_BATCH_THRESHOLD = 12;
+  // Generate initial distribution across entire timeline
+  function initLoadQueue() {
+    // Priority 1: First frame immediately
+    queueFrame(1);
 
-    order.forEach((frameNum) => {
-      const img = new Image();
-      img.src = getFramePath(frameNum);
+    // Priority 2: Distributed keyframes across entire scroll journey (every 6 frames)
+    for (let i = 6; i <= TOTAL_FRAMES; i += 6) {
+      queueFrame(i);
+    }
+    queueFrame(TOTAL_FRAMES);
 
-      img.onload = () => {
-        images[frameNum - 1] = img;
-        loadedCount++;
+    // Priority 3: Midpoints (every 3 frames)
+    for (let i = 3; i <= TOTAL_FRAMES; i += 3) {
+      queueFrame(i);
+    }
 
-        // Draw initial frame immediately once frame 1 is ready
-        if (frameNum === 1 && !isInitialReady) {
-          resizeCanvas();
-          renderFrame(0);
-        }
+    // Priority 4: All remaining frames to reach full 60fps fidelity
+    for (let i = 1; i <= TOTAL_FRAMES; i++) {
+      queueFrame(i);
+    }
 
-        // Once key checkpoints across the page are ready, dismiss preloader for instant interaction
-        if (loadedCount >= KEY_BATCH_THRESHOLD && !isInitialReady) {
-          isInitialReady = true;
-          dismissLoader();
-        }
+    processQueue();
+  }
 
-        updateLoaderProgress();
+  // Reprioritize queue dynamically around current scroll position
+  function reprioritizeQueue(targetFrame) {
+    if (!loadQueue.length) return;
+    if (Math.abs(targetFrame - lastReprioritizedFrame) < 3) return;
+    lastReprioritizedFrame = targetFrame;
 
-        if (loadedCount === TOTAL_FRAMES) {
-          dismissLoader();
-        }
-      };
+    loadQueue.sort((a, b) => Math.abs(a - targetFrame) - Math.abs(b - targetFrame));
+    processQueue();
+  }
 
-      img.onerror = () => {
-        loadedCount++;
-        updateLoaderProgress();
-        if (loadedCount >= KEY_BATCH_THRESHOLD && !isInitialReady) {
-          isInitialReady = true;
-          dismissLoader();
-        }
-        if (loadedCount === TOTAL_FRAMES) {
-          dismissLoader();
-        }
-      };
-    });
+  function processQueue() {
+    while (activeDownloads < MAX_CONCURRENT_DOWNLOADS && loadQueue.length > 0) {
+      const frameNum = loadQueue.shift();
+      queuedSet.delete(frameNum);
+      if (loadedSet.has(frameNum)) continue;
+
+      activeDownloads++;
+      loadSingleFrame(frameNum);
+    }
+  }
+
+  function loadSingleFrame(frameNum) {
+    const img = new Image();
+    img.src = getFramePath(frameNum);
+
+    const onComplete = async () => {
+      // Decode image off the main thread so drawing never stutters
+      if ('decode' in img) {
+        try {
+          await img.decode();
+        } catch (_) {}
+      }
+
+      img._ready = true;
+      images[frameNum - 1] = img;
+      loadedSet.add(frameNum);
+      loadedCount++;
+
+      // Instant reveal: Render Frame 1 immediately and dismiss loader
+      if (frameNum === 1 && !isInitialReady) {
+        resizeCanvas();
+        drawFrameToCanvas(0);
+        isInitialReady = true;
+        dismissLoader();
+      }
+
+      // If initial 3 keyframes are ready, dismiss loader so visitor never waits
+      if (loadedCount >= 3 && !isInitialReady) {
+        isInitialReady = true;
+        dismissLoader();
+      }
+
+      updateLoaderProgress();
+      activeDownloads--;
+      processQueue();
+    };
+
+    img.onload = onComplete;
+    img.onerror = () => {
+      loadedSet.add(frameNum);
+      activeDownloads--;
+      processQueue();
+    };
   }
 
   function updateLoaderProgress() {
@@ -139,14 +164,17 @@
     startAnimationLoop();
   }
 
-  // Canvas Sizing with Aspect-Ratio-Aware Cover Geometry
+  // Canvas Sizing with Aspect-Ratio-Aware Cover Geometry and DPR Capping (Prevents 4K lag)
   function resizeCanvas() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const displayWidth = window.innerWidth;
     const displayHeight = window.innerHeight;
 
     canvas.width = Math.floor(displayWidth * dpr);
     canvas.height = Math.floor(displayHeight * dpr);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'medium';
 
     if (lastRenderedFrame >= 0) {
       drawFrameToCanvas(lastRenderedFrame);
@@ -157,25 +185,25 @@
 
   // Find nearest loaded image if target frame is still downloading
   function getBestFrame(targetIndex) {
-    if (images[targetIndex] && images[targetIndex].complete && images[targetIndex].naturalWidth > 0) {
+    if (images[targetIndex] && images[targetIndex]._ready) {
       return { img: images[targetIndex], index: targetIndex };
     }
 
     // Search outwards for nearest loaded frame
     for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
       const prev = targetIndex - offset;
-      if (prev >= 0 && images[prev] && images[prev].complete && images[prev].naturalWidth > 0) {
+      if (prev >= 0 && images[prev] && images[prev]._ready) {
         return { img: images[prev], index: prev };
       }
       const next = targetIndex + offset;
-      if (next < TOTAL_FRAMES && images[next] && images[next].complete && images[next].naturalWidth > 0) {
+      if (next < TOTAL_FRAMES && images[next] && images[next]._ready) {
         return { img: images[next], index: next };
       }
     }
     return null;
   }
 
-  // Draw frame to canvas with centered cover geometry
+  // Draw frame to canvas with centered cover geometry (zero redundant full-screen clears)
   function drawFrameToCanvas(frameIndex) {
     const match = getBestFrame(frameIndex);
     if (!match) return;
@@ -183,8 +211,8 @@
     const img = match.img;
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    const imgWidth = img.naturalWidth;
-    const imgHeight = img.naturalHeight;
+    const imgWidth = img.naturalWidth || 1600;
+    const imgHeight = img.naturalHeight || 900;
 
     const canvasAspect = canvasWidth / canvasHeight;
     const imgAspect = imgWidth / imgHeight;
@@ -203,8 +231,6 @@
       offsetY = 0;
     }
 
-    ctx.fillStyle = '#060204';
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     lastRenderedFrame = frameIndex;
   }
@@ -223,6 +249,9 @@
     } else {
       targetProgress = 0;
     }
+
+    const currentTargetFrame = Math.round(targetProgress * (TOTAL_FRAMES - 1)) + 1;
+    reprioritizeQueue(currentTargetFrame);
 
     if (navbar) {
       navbar.classList.toggle('scrolled', scrollTop > 20);
@@ -538,7 +567,7 @@
   // Initialize
   function init() {
     resizeCanvas();
-    preloadImages();
+    initLoadQueue();
     updateScrollProgress();
     initTechAccordion();
     initSportsModal();
