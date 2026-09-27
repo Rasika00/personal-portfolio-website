@@ -2145,22 +2145,18 @@ dialog.sports-modal-backdrop::backdrop {
   padding-bottom: 7rem;
 }
 
-.contact-box {
-  padding: 3.5rem 3rem;
-  background: linear-gradient(135deg, rgba(35, 15, 25, 0.7) 0%, rgba(15, 8, 12, 0.7) 100%);
+.contact-container {
+  padding: 3.5rem 3.2rem;
+  background: linear-gradient(145deg, rgba(28, 12, 20, 0.78) 0%, rgba(12, 5, 9, 0.88) 100%);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 94, 58, 0.25);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .contact-header {
-  max-width: 680px;
+  max-width: 760px;
   margin-bottom: 2.5rem;
 }
 
@@ -2181,16 +2177,211 @@ dialog.sports-modal-backdrop::backdrop {
   color: var(--text-muted);
 }
 
-.contact-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
+/* Dinusha-style 2-Column Contact Grid */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 3.5rem;
+  align-items: start;
 }
 
-.contact-cta-btn {
-  font-size: 1rem;
+.c-info h3 {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.85rem;
+  line-height: 1.3;
+}
+
+.c-info p {
+  color: var(--text-muted);
+  line-height: 1.65;
+  font-size: 0.96rem;
+  margin-bottom: 2rem;
+}
+
+.socials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.soc {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1.15rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  backdrop-filter: blur(12px);
+}
+
+.soc:hover {
+  border-color: var(--accent-orange);
+  background: rgba(255, 94, 58, 0.12);
+  color: #ffffff;
+  transform: translateX(6px);
+  box-shadow: 0 6px 22px rgba(255, 94, 58, 0.18);
+}
+
+.soc-i {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 1.15rem;
+  flex: 0 0 34px;
+}
+
+.soc-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.soc-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-amber);
+}
+
+.soc-value {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #ffffff;
+  word-break: break-all;
+}
+
+/* Contact Form */
+.c-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  background: rgba(255, 255, 255, 0.025);
+  padding: 2.2rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.15rem;
+}
+
+.fg {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.fg label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.fg input,
+.fg textarea {
+  padding: 0.88rem 1.15rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.94rem;
+  transition: all 0.25s ease;
+  outline: none;
+  width: 100%;
+}
+
+.fg input::placeholder,
+.fg textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.fg input:focus,
+.fg textarea:focus {
+  border-color: var(--accent-orange);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 18px rgba(255, 94, 58, 0.2);
+}
+
+.fg textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-status-alert {
+  padding: 0.9rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin-top: 0.4rem;
+}
+
+.form-status-alert.success {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  color: #34d399;
+}
+
+.form-status-alert.info {
+  background: rgba(255, 168, 52, 0.12);
+  border: 1px solid rgba(255, 168, 52, 0.32);
+  color: #ffa834;
+}
+
+.spin-dot {
+  display: inline-block;
+  font-size: 0.82rem;
+  line-height: 1;
+  animation: spinDot 1s infinite linear;
+}
+
+@keyframes spinDot {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Floating Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 0.85rem 1.5rem;
+  background: rgba(22, 10, 16, 0.95);
+  border: 1px solid var(--accent-orange);
+  color: #ffffff;
+  border-radius: var(--radius-pill);
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--accent-glow);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+}
+
+.toast.on {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .btn-pill-glass {
@@ -2806,6 +2997,11 @@ dialog.sports-modal-backdrop::backdrop {
   .cert-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -2847,8 +3043,29 @@ dialog.sports-modal-backdrop::backdrop {
     padding-top: 2rem;
   }
 
-  .contact-box {
-    padding: 2.5rem 1.5rem;
+  .contact-container {
+    padding: 2.2rem 1.35rem;
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .row2 {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+  }
+
+  .c-form {
+    padding: 1.5rem 1.2rem;
+  }
+
+  .toast {
+    right: 1rem;
+    left: 1rem;
+    bottom: 1.5rem;
+    text-align: center;
   }
 
   .cert-grid {

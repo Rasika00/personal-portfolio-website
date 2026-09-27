@@ -387,6 +387,113 @@
     });
   }
 
+  // Floating Toast Notification
+  function showToast(msg, duration = 3500) {
+    const toastEl = document.getElementById('toast');
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    if (toastEl._timeout) clearTimeout(toastEl._timeout);
+    toastEl._timeout = setTimeout(() => {
+      toastEl.classList.remove('on');
+    }, duration);
+  }
+
+  // Interactive Contact Form (Dinusha-style with Dual Email Delivery & Mailto Fallback)
+  function initContactForm() {
+    const form = document.getElementById('contactForm');
+    const nameInput = document.getElementById('cN');
+    const emailInput = document.getElementById('cE');
+    const subjectInput = document.getElementById('cS');
+    const messageInput = document.getElementById('cM');
+    const btn = document.getElementById('sendBtn');
+    const status = document.getElementById('formStatus');
+
+    if (!form || !btn) return;
+
+    const PRIMARY_EMAIL = 'rasikapriyanath62@gmail.com';
+    const CC_EMAIL = 'itt2023097@tec.rjt.ac.lk';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      const email = emailInput ? emailInput.value.trim() : '';
+      const subject = subjectInput ? subjectInput.value.trim() : '';
+      const message = messageInput ? messageInput.value.trim() : '';
+
+      if (!name || !email || !message) {
+        showToast('Please fill in your Name, Email & Message');
+        return;
+      }
+
+      // Visual sending state
+      const originalBtnHTML = btn.innerHTML;
+      btn.innerHTML = `<span>Sending...</span><div class="btn-arrow-circle"><span class="spin-dot">●</span></div>`;
+      btn.disabled = true;
+      if (status) {
+        status.style.display = 'none';
+        status.className = 'form-status-alert';
+      }
+
+      const emailSubject = subject || `Portfolio Contact from ${name}`;
+      const mailtoUrl = `mailto:${PRIMARY_EMAIL}?cc=${encodeURIComponent(CC_EMAIL)}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(`Hi Rasika,\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}\n`)}`;
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(`https://formsubmit.co/ajax/${PRIMARY_EMAIL}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            _subject: emailSubject,
+            _cc: CC_EMAIL,
+            message: message,
+            _template: 'box'
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok && (data.success === 'true' || data.success === true || response.status === 200)) {
+          if (status) {
+            status.textContent = "✓ Message sent successfully! I'll get back to you soon.";
+            status.className = 'form-status-alert success';
+            status.style.display = 'block';
+          }
+          form.reset();
+          showToast('Message Sent Successfully ✓');
+        } else {
+          // If response not OK or requires manual client fallback
+          throw new Error('Service response not OK');
+        }
+      } catch (err) {
+        // Fallback directly to mailto
+        if (status) {
+          status.innerHTML = `Opening your email app to send directly to <strong>${PRIMARY_EMAIL}</strong> &amp; <strong>${CC_EMAIL}</strong>...`;
+          status.className = 'form-status-alert info';
+          status.style.display = 'block';
+        }
+        showToast('Connecting to your email app...');
+        setTimeout(() => {
+          window.location.href = mailtoUrl;
+        }, 600);
+      } finally {
+        btn.innerHTML = originalBtnHTML;
+        btn.disabled = false;
+      }
+    });
+  }
+
   // Initialize
   function init() {
     resizeCanvas();
@@ -395,6 +502,7 @@
     initTechAccordion();
     initSportsModal();
     initCertFilters();
+    initContactForm();
   }
 
   if (document.readyState === 'loading') {
